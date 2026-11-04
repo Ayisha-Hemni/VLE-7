@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vle7-app
+  labels:
+    app: vle7-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: vle7-app
+  template:
+    metadata:
+      labels:
+        app: vle7-app
+    spec:
+      containers:
+        - name: vle7-app
+          image: vle7-monitoring-app:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vle7-app-service
+  labels:
+    app: vle7-app
+spec:
+  selector:
+    app: vle7-app
+  ports:
+    - port: 5000
+      targetPort: 5000
+  type: NodePort
